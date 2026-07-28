@@ -1,0 +1,8 @@
+{
+  "full-tokenid": "pickle@pve!pickle-api",
+  "info": {
+    "comment": "pickle-api provisioning token",
+    "privsep": "1"
+  },
+  "value": "<PVE가 발급 시 1회만 반환하는 토큰 시크릿>"
+}

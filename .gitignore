@@ -1,0 +1,4 @@
+pickle-gitcrypt.key
+*.swp
+*~
+.DS_Store

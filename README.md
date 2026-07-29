@@ -84,7 +84,7 @@ push하지 말고 `.gitattributes`부터 확인해야 합니다.
 git clone <remote> vault && cd vault
 git-crypt unlock /path/to/vault.key
 chmod 600 api.env proxmox-token.json lightsail-ssh.pem \
-          sshgw-*_ed25519_key origin-ca/origin.key
+          sshgw-*_ed25519_key origin-ca/*.key
 ```
 
 퍼미션 재적용이 절차의 일부입니다. git은 실행 비트 외의 파일 모드를 보존하지 않으므로

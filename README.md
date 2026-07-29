@@ -38,14 +38,17 @@ lightsail-ssh.pem           릴레이 SSH 개인키               → 암호화
 sshgw-ssh_host_ed25519_key  게이트웨이 호스트키 백업        → 암호화
 sshgw-upstream_ed25519_key  게이트웨이 → VM 홉 개인키       → 암호화
 sshgw-terminal_ed25519_key  웹 터미널 브리지 개인키         → 암호화
-origin-ca/origin.key        Origin CA 개인키                → 암호화
-origin-ca/origin.crt        Origin CA 인증서                   평문 (공개물)
+origin-ca/<존>.key          존별 Origin CA 개인키           → 암호화
+origin-ca/<존>.crt          대응 인증서                        평문 (공개물)
 sshgw-*_ed25519_key.pub     대응 공개키                        평문 (공개물)
 ```
 
-"암호화"로 표시된 것만 `.gitattributes`에 등재돼 있습니다. 등재되지 않은 파일은 평문으로
-커밋되므로, 새 자격증명을 넣을 때 가장 먼저 손대야 하는 파일이며, 등재 형식은 경로마다
-`filter=git-crypt diff=git-crypt` 한 줄입니다.
+Origin CA 쌍은 **존마다 별도 파일**로 둡니다. 한 존의 쌍을 다른 존 것으로 덮어쓰면 앞의
+쌍만 SAN에 담고 있던 이름이 조용히 인증서를 잃습니다.
+
+`.gitattributes`는 **모양 규칙을 먼저** 둡니다(`*.key`·`*_key`·`*.pem`). 경로를 하나씩
+등재하는 방식만 두면 목록에 없는 경로에 키를 넣는 순간 평문으로 커밋되고, 그 실패는
+조용합니다 — 새 자격증명을 넣기 전에 가장 먼저 확인할 파일입니다.
 
 이 저장소에는 위 중 `api.env`와 `proxmox-token.json`만 `.example` 접미사를 붙인
 자리표시자로 들어 있습니다. 나머지는 키 파일이라 예시로 만들 내용이 없습니다.

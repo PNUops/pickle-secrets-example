@@ -33,6 +33,7 @@
 .gitattributes              어떤 경로를 암호화할지 정하는 단일 지점
 .gitignore                  복호화 키 파일을 실수로 커밋하지 않도록 차단
 api.env                     pickle-api 마스터 env          → 암호화
+llm-gateway.env             LLM 게이트웨이 런타임 env      → 암호화
 proxmox-token.json          Proxmox API 토큰                → 암호화
 lightsail-ssh.pem           릴레이 SSH 개인키               → 암호화
 sshgw-ssh_host_ed25519_key  게이트웨이 호스트키 백업        → 암호화
@@ -50,7 +51,7 @@ Origin CA 쌍은 **존마다 별도 파일**로 둡니다. 한 존의 쌍을 다
 등재하는 방식만 두면 목록에 없는 경로에 키를 넣는 순간 평문으로 커밋되고, 그 실패는
 조용합니다 — 새 자격증명을 넣기 전에 가장 먼저 확인할 파일입니다.
 
-이 레포지토리에는 위 중 `api.env`와 `proxmox-token.json`만 `.example` 접미사를 붙인
+이 레포지토리에는 위 중 `api.env`, `llm-gateway.env`, `proxmox-token.json`만 `.example` 접미사를 붙인
 자리표시자로 들어 있습니다. 나머지는 키 파일이라 예시로 만들 내용이 없습니다.
 
 ## 셋업
@@ -83,7 +84,7 @@ push하지 말고 `.gitattributes`부터 확인해야 합니다.
 ```bash
 git clone <remote> vault && cd vault
 git-crypt unlock /path/to/vault.key
-chmod 600 api.env proxmox-token.json lightsail-ssh.pem \
+chmod 600 api.env llm-gateway.env proxmox-token.json lightsail-ssh.pem \
           sshgw-*_ed25519_key origin-ca/*.key
 ```
 
@@ -105,7 +106,7 @@ clone 직후 자격증명 파일은 0644로 떨어집니다.
 | 항목 | 실제 볼트 | 이 예시본 |
 |---|---|---|
 | 자격증명 값 | git-crypt 암호문으로 커밋 | 없음. 자리표시자 텍스트뿐 |
-| 파일 이름 | `api.env`, `proxmox-token.json` | `.example` 접미사를 붙임 |
+| 파일 이름 | `api.env`, `llm-gateway.env`, `proxmox-token.json` | `.example` 접미사를 붙임 |
 | 키 파일 | 5종 암호화 커밋 | 미포함 (예시로 만들 내용이 없음) |
 | 도메인·호스트 | 실제 값 | `example.ac.kr` 등 예시 도메인 |
 | git-crypt | 실제로 설정됨 | 설정하지 않음 (암호화할 대상이 없음) |

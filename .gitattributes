@@ -10,6 +10,7 @@
 
 # 명시 목록 — 위 모양 규칙과 중복이지만 이 볼트가 무엇을 담기로 했는지의 문서다.
 api.env                     filter=git-crypt diff=git-crypt
+llm-gateway.env             filter=git-crypt diff=git-crypt
 proxmox-token.json          filter=git-crypt diff=git-crypt
 lightsail-ssh.pem           filter=git-crypt diff=git-crypt
 sshgw-ssh_host_ed25519_key  filter=git-crypt diff=git-crypt

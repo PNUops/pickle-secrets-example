@@ -81,10 +81,35 @@ push하지 말고 `.gitattributes`부터 확인해야 합니다.
 
 ## 복구
 
+후보 core의 독립 자격증명은 실제 볼트의 `candidate-core.key`에 tar bundle로
+보관합니다. 기존 `*.key` 암호화 규칙이 적용되며, API env, DB password, DB CA와 server
+인증서/키, 최초 검증 관리자 입력, core 설정과 소유권 manifest가 들어갑니다. 각 member는
+0600이고 `SHA256SUMS`로 추출 결과를 대조합니다. 이 공개 사본은 파일 이름과 절차만
+설명하며 실제 bundle이나 키 내용을 제공하지 않습니다.
+
+잠금 해제된 볼트에서 새 root 전용 디렉터리로만 추출합니다. 출력 디렉터리가 이미
+있으면 중단하며, 기존 서비스 파일 위에 덮어쓰지 않습니다.
+
 ```bash
+(
+set -eu
+umask 077
+mkdir -m 700 /root/candidate-core-recovery
+tar -xf candidate-core.key -C /root/candidate-core-recovery
+cd /root/candidate-core-recovery
+sha256sum -c SHA256SUMS
+)
+```
+
+이 bundle은 자격증명과 설정의 복구 사본입니다. DB 데이터와 컨테이너 디스크는 별도
+백업으로 복원하며, CA private key는 DB와 앱 LXC에 배포하지 않습니다. Git 복호화 키도
+bundle과 별도로 보관합니다.
+
+```bash
+umask 077
 git clone <remote> vault && cd vault
 git-crypt unlock /path/to/vault.key
-chmod 600 api.env llm-gateway.env proxmox-token.json lightsail-ssh.pem \
+chmod 600 candidate-core.key api.env llm-gateway.env proxmox-token.json lightsail-ssh.pem \
           sshgw-*_ed25519_key origin-ca/*.key
 ```
 

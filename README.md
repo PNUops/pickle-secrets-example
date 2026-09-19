@@ -109,12 +109,43 @@ bundle과 별도로 보관합니다.
 umask 077
 git clone <remote> vault && cd vault
 git-crypt unlock /path/to/vault.key
-chmod 600 candidate-core.key api.env llm-gateway.env proxmox-token.json lightsail-ssh.pem \
+chmod 600 candidate-core.key candidate-db-backup.key api.env llm-gateway.env proxmox-token.json lightsail-ssh.pem \
           sshgw-*_ed25519_key origin-ca/*.key
 ```
 
 퍼미션 재적용이 절차의 일부입니다. git은 실행 비트 외의 파일 모드를 보존하지 않으므로
 clone 직후 자격증명 파일은 0644로 떨어집니다.
+
+### 후보 DB 백업 자격증명 bundle
+
+`candidate-core.key`와 별도로 후보 DB 백업의 암호화 bundle을 보관합니다. bundle에는
+client encryption key, source writer와 독립 monitor reader의 PBS API token payload,
+두 실행 환경의 설정, 복구 사본 검증 기록, custody manifest와 `SHA256SUMS`를 넣습니다. 실제 값은 비공개 볼트에만
+두며 이 예시 레포지토리에는 값이나 bundle을 넣지 않습니다. API token은 회전하거나 폐기할 수
+있지만, 기존 encrypted archive를 복호화하려면 당시의 client encryption key가 계속 필요합니다.
+
+복구할 때는 새 root 전용 디렉터리를 만들고 bundle의 모든 member를 0600으로 보존한 뒤
+해시를 확인합니다. 기존 디렉터리나 서비스 파일을 덮어쓰지 않고, writer instance 두 개를
+자동으로 시작하지 않습니다.
+
+```bash
+(
+set -eu
+umask 077
+bundle=/protected/candidate-db-backup.key
+recovery_dir=/root/candidate-db-backup-recovery
+test ! -e "$recovery_dir"
+mkdir -m 700 "$recovery_dir"
+tar -xf "$bundle" -C "$recovery_dir"
+find "$recovery_dir" -type f -exec chmod 600 {} +
+cd "$recovery_dir"
+sha256sum -c SHA256SUMS
+)
+```
+
+검증이 끝난 뒤에도 token payload와 encryption key의 소유자·퍼미션을 확인하고, 필요한
+writer 또는 monitor 하나만 별도 절차로 기동합니다. bundle 복구는 DB 데이터 복원이나
+서비스 기동을 대신하지 않습니다.
 
 ## 운용에서 지키는 것
 

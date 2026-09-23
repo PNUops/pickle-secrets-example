@@ -116,6 +116,43 @@ chmod 600 candidate-core.key candidate-db-backup.key api.env llm-gateway.env pro
 퍼미션 재적용이 절차의 일부입니다. git은 실행 비트 외의 파일 모드를 보존하지 않으므로
 clone 직후 자격증명 파일은 0644로 떨어집니다.
 
+### 후보 control link bundle
+
+`candidate-control-links.key`는 후보 환경의 API와 core 서비스가 서로 연결되는 데 필요한
+설정의 복구 사본입니다. API·core의 env와 서비스 설정, Proxmox API 토큰, proxy·SSH gateway
+연결 토큰, SSH gateway의 개인키·공개키, 설정 파일 manifest, 원본 commit 정보와
+`SHA256SUMS`를 함께 보관합니다. DB 데이터는 포함하지 않습니다. 실제 값과 bundle은 비공개
+볼트에만 둡니다.
+
+잠금 해제된 볼트에서 비어 있는 root 전용 디렉터리를 새로 만들고 추출합니다. 모든 일반
+파일의 권한을 0600으로 맞춘 뒤 `SHA256SUMS`와 manifest의 파일 목록·원본 commit을
+확인합니다. 아래 명령은 추출 결과만 검사하며 서비스 경로에는 설치하지 않습니다.
+
+```bash
+(
+set -eu
+umask 077
+bundle=/protected/candidate-control-links.key
+recovery_dir=/root/candidate-control-links-recovery
+test ! -e "$recovery_dir"
+mkdir -m 700 "$recovery_dir"
+tar -xf "$bundle" -C "$recovery_dir"
+find "$recovery_dir" -type d -exec chmod 700 {} +
+find "$recovery_dir" -type f -exec chmod 600 {} +
+cd "$recovery_dir"
+sha256sum -c SHA256SUMS
+)
+```
+
+복구 대상의 서비스별 경로·소유자와 생성 입력은 manifest의 `install_map`과 `input_only`에서 확인합니다. API와 core의 env, Proxmox
+토큰, proxy·SSH gateway 토큰, SSH gateway 키와 서비스 설정을 한 구성으로 대조한 뒤 각각의
+대상에 설치합니다. pve1의 기존 서비스 파일이나 실행 중인 구성을 덮어쓰지 않습니다.
+후보 DB의 source writer가 이전 환경에서 계속 실행 중인지 먼저 확인하고, 실행 중이면
+중지하거나 격리해 단일 writer임을 확인합니다. 그 다음 복구한 설정으로 API를 기동하고,
+잡을 활성화합니다. bundle에서 복원한 키와 토큰은 정상적인 자격증명 회전 절차로 교체하고
+연결이 확인된 뒤 이전 값을 폐기합니다. 평문 bundle이나 추출본은 공개 레포지토리에
+복사하지 않습니다.
+
 ### 후보 DB 백업 자격증명 bundle
 
 `candidate-core.key`와 별도로 후보 DB 백업의 암호화 bundle을 보관합니다. bundle에는

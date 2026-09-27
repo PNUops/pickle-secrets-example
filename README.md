@@ -184,6 +184,20 @@ sha256sum -c SHA256SUMS
 writer 또는 monitor 하나만 별도 절차로 기동합니다. bundle 복구는 DB 데이터 복원이나
 서비스 기동을 대신하지 않습니다.
 
+### 후보 서비스 백업 복구 자료
+
+실제 볼트에는 DB 백업 자료와 분리된 서비스 백업 복구 bundle도 암호화해 보관합니다.
+client encryption key, 별도 writer·reader token, 소유·권한 manifest, 복구 절차와
+`SHA256SUMS`가 한 묶음입니다. 이 공개 예시에는 bundle 파일이나 실제 값을 싣지
+않습니다.
+
+복구할 때는 tar를 풀기 전에 멤버가 예상한 일반 파일뿐이고 절대 경로·
+상위 경로·링크가 없는지 확인합니다. 새 root 전용 디렉터리에 추출한 뒤
+내부 checksum을 검사합니다.
+이 검사와 별도로 보관한 원본 key SHA-256 및 독립 복원 노드의 key 사본도 대조합니다.
+원본 writer와 백업 job 실행 주체가 정지·격리됐는지 확인한 뒤 reader로 실제 백업을 읽으며, token
+교체 후에도 기존 archive를 읽어야 한다면 당시 client key를 보존합니다.
+
 ## 운용에서 지키는 것
 
 - 잠금 상태로 방치하지 않습니다. `git-crypt lock`을 걸어 두면 워킹트리가 암호문이 되어,

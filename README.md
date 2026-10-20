@@ -34,6 +34,7 @@
 .gitignore                  복호화 키 파일을 실수로 커밋하지 않도록 차단
 api.env                     pickle-api 마스터 env          → 암호화
 llm-gateway.env             LLM 게이트웨이 런타임 env      → 암호화
+discord-ops-webhook.key     운영 알림 채널의 webhook URL   → 암호화
 proxmox-token.json          Proxmox API 토큰                → 암호화
 lightsail-ssh.pem           릴레이 SSH 개인키               → 암호화
 sshgw-ssh_host_ed25519_key  게이트웨이 호스트키 백업        → 암호화
@@ -51,8 +52,11 @@ Origin CA 쌍은 **존마다 별도 파일**로 둡니다. 한 존의 쌍을 다
 등재하는 방식만 두면 목록에 없는 경로에 키를 넣는 순간 평문으로 커밋되고, 그 실패는
 조용합니다 — 새 자격증명을 넣기 전에 가장 먼저 확인할 파일입니다.
 
-이 레포지토리에는 위 중 `api.env`, `llm-gateway.env`, `proxmox-token.json`만 `.example` 접미사를 붙인
-자리표시자로 들어 있습니다. 나머지는 키 파일이라 예시로 만들 내용이 없습니다.
+이 레포지토리에는 위 중 `api.env`, `llm-gateway.env`, `proxmox-token.json`,
+`discord-ops-webhook.key`가 `.example` 접미사를 붙인 자리표시자로 들어 있습니다.
+운영 알림 webhook 예시는 실제 발송 주소로 교체한 뒤 각 호스트의 root 전용
+`/etc/pickle-discord-alerts/webhook`에 `0600`으로 배치합니다. 실제 URL은 비밀이며
+일반 로그나 평문 Git 기록에 넣지 않습니다. 나머지는 키 파일이라 예시로 만들 내용이 없습니다.
 
 ## 셋업
 

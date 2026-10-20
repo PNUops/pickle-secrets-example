@@ -40,6 +40,7 @@ lightsail-ssh.pem           릴레이 SSH 개인키               → 암호화
 sshgw-ssh_host_ed25519_key  게이트웨이 호스트키 백업        → 암호화
 sshgw-upstream_ed25519_key  게이트웨이 → VM 홉 개인키       → 암호화
 sshgw-terminal_ed25519_key  웹 터미널 브리지 개인키         → 암호화
+monitoring-public-canary.key  공개 LLM 진단 키 복구 사본     → 암호화
 origin-ca/<존>.key          존별 Origin CA 개인키           → 암호화
 origin-ca/<존>.crt          대응 인증서                        평문 (공개물)
 sshgw-*_ed25519_key.pub     대응 공개키                        평문 (공개물)
@@ -53,10 +54,12 @@ Origin CA 쌍은 **존마다 별도 파일**로 둡니다. 한 존의 쌍을 다
 조용합니다 — 새 자격증명을 넣기 전에 가장 먼저 확인할 파일입니다.
 
 이 레포지토리에는 위 중 `api.env`, `llm-gateway.env`, `proxmox-token.json`,
-`discord-ops-webhook.key`가 `.example` 접미사를 붙인 자리표시자로 들어 있습니다.
+`discord-ops-webhook.key`, `monitoring-public-canary.key`가 `.example` 접미사를 붙인 자리표시자로 들어 있습니다.
 운영 알림 webhook 예시는 실제 발송 주소로 교체한 뒤 각 호스트의 root 전용
 `/etc/pickle-discord-alerts/webhook`에 `0600`으로 배치합니다. 실제 URL은 비밀이며
 일반 로그나 평문 Git 기록에 넣지 않습니다. 나머지는 키 파일이라 예시로 만들 내용이 없습니다.
+
+진단 키는 운영자 소유 workspace에 발급하고 허용 endpoint·요청량·동시 실행·일일 토큰·유료 크레딧·만료를 제한합니다. 진단 서버의 root 전용 파일에 배포하며 키 값은 출력하지 않습니다.
 
 ## 셋업
 
@@ -113,7 +116,7 @@ bundle과 별도로 보관합니다.
 umask 077
 git clone <remote> vault && cd vault
 git-crypt unlock /path/to/vault.key
-chmod 600 candidate-core.key candidate-db-backup.key api.env llm-gateway.env proxmox-token.json lightsail-ssh.pem \
+chmod 600 monitoring-public-canary.key candidate-core.key candidate-db-backup.key api.env llm-gateway.env proxmox-token.json lightsail-ssh.pem \
           sshgw-*_ed25519_key origin-ca/*.key
 ```
 
@@ -218,7 +221,7 @@ client encryption key, 별도 writer·reader token, 소유·권한 manifest, 복
 |---|---|---|
 | 자격증명 값 | git-crypt 암호문으로 커밋 | 없음. 자리표시자 텍스트뿐 |
 | 파일 이름 | `api.env`, `llm-gateway.env`, `proxmox-token.json` | `.example` 접미사를 붙임 |
-| 키 파일 | 5종 암호화 커밋 | 미포함 (예시로 만들 내용이 없음) |
+| 키 파일 | 암호화 커밋 | 진단 키는 자리표시자만 제공 |
 | 도메인·호스트 | 실제 값 | `example.ac.kr` 등 예시 도메인 |
 | git-crypt | 실제로 설정됨 | 설정하지 않음 (암호화할 대상이 없음) |
 
